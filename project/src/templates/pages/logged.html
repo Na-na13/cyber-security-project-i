@@ -1,0 +1,44 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+    <head>
+      <link rel="stylesheet" href="{% static 'project/styles.css' %}">
+      <title>Hi</title>
+    </head>
+
+    <body>
+      <h2>Hello {{user}}</h2>
+      <a href="/src/logout/">Log out</a>
+      <h3>Send a message to the board</h3>
+      <!--<form action="/src/send_message/" method="GET">-->
+      <form action="/src/send_message/" method="POST">
+        {% csrf_token %}
+        <select name="receiver">
+          {% for user in users %}
+            {% if user is users.0 %}
+              <option value="{{user}}">{{user}}</option>
+              <option value="line" disabled="disabled">--------</option>   
+            {% else %} 
+              <option value="{{user.username}}">{{user}}</option>
+            {% endif %}
+          {% endfor %}    
+        </select><br>
+        <textarea name="messagetext" rows="5" cols="33"></textarea><br>
+        <button type="submit">Send</button>
+      </form>
+
+      <table>
+        <tr>
+          <th>From</th>
+          <th>Messages</th>
+        </tr>
+        {% for message in messages %}
+          <tr>
+            <td>{{message.sender}}</td>
+            <td>{{message.messagetext}}</td>
+          </tr>
+        {% endfor %}
+      </table>
+
+    </body>
+</html>

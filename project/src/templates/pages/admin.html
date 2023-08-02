@@ -1,0 +1,62 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+    <head>
+      <link rel="stylesheet" href="{% static 'project/styles.css' %}">
+      <title>Hi</title>
+    </head>
+
+    <body>
+      <h2>Hello {{ user | safe }}</h2>
+      <a href="{% url 'logout' %}">Log out</a>
+      <h3>Send a message to the board</h3>
+      <form action="{% url 'send_message' %}" method="GET">
+      <!--<form action="{% url 'send_message' %}" method="POST">
+        {% csrf_token %}-->
+        <select name="receiver">
+          {% for user in users %}
+            {% if user is users.0 %}
+              <option value="{{user}}">{{user}}</option>
+              <option value="line" disabled="disabled">--------</option>   
+            {% else %} 
+              <option value="{{user.username}}">{{user}}</option>
+            {% endif %}
+          {% endfor %}    
+        </select><br>
+        <textarea name="messagetext" rows="5" cols="33"></textarea><br>
+        <button type="submit">Send</button>
+      </form>
+
+      <h3>Select message sender to view messages</h3>
+      <form action="{% url 'view_messages' %}" method="POST">
+        {% csrf_token %}
+        <select name="sender">
+          {% for user in users %}
+            <option value="{{user.username}}">{{user}}</option>
+          {% endfor %}    
+        </select><br>
+        <button type="submit">Select</button>
+      </form>
+
+      <form action="{% url 'delete_messages' %}" method="POST">
+        {% csrf_token %}
+        <table>
+            <tr>
+            <th>From</th>
+            <th>To</th>
+            <th>Messages</th>
+            <th><button type="submit">Delete</button></th>
+            </tr>
+            {% for message in messages %}
+            <tr>
+                <td>{{ message.sender }}</td>
+                <td>{{ message.receiver }}</td>
+                <td>{{ message.messagetext | safe }}</td>
+                <td><input type="checkbox" name="message_id" value="{{message.id}}"></td>
+            </tr>
+            {% endfor %}
+        </table>
+      </form>
+
+    </body>
+</html>

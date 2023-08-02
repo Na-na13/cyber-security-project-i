@@ -7,12 +7,12 @@
     </head>
 
     <body>
-      <h2>Hello {{user}}</h2>
-      <a href="/src/logout/">Log out</a>
+      <h2>Hello {{ user | safe }}</h2>
+      <a href="{% url 'logout' %}">Log out</a>
       <h3>Send a message to the board</h3>
-      <!--<form action="/src/send_message/" method="GET">-->
-      <form action="/src/send_message/" method="POST">
-        {% csrf_token %}
+      <form action="{% url 'send_message' %}" method="GET">
+      <!--<form action="{% url 'send_message' %}" method="POST">
+        {% csrf_token %}-->
         <select name="receiver">
           {% for user in users %}
             {% if user is users.0 %}
@@ -35,7 +35,9 @@
         {% for message in messages %}
           <tr>
             <td>{{message.sender}}</td>
-            <td>{{message.messagetext}}</td>
+            <td>{{message.messagetext | safe}}</td>
+            <!--<td>{{message.0}}</td>
+            <td>{{message.1 | safe}}</td>-->
           </tr>
         {% endfor %}
       </table>

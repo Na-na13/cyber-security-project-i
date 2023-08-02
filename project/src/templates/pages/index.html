@@ -7,12 +7,12 @@
     <body>
       <h2>Login</h2>
       {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
-      <form name="login" action="login/" method="POST" autocomplete="off">
+      <form name="login" action="{% url 'login' %}" method="POST" autocomplete="off">
         {% csrf_token %}
         <input type="text" placeholder="Username" name="username" required>
         <input type="password" placeholder="Password" name="password" required>
         <button type="submit">Login</button>
       </form>
-      <a href="create/">Create Account</a>
+      <a href="{% url 'create' %}">Create Account</a>
     </body>
 </html>

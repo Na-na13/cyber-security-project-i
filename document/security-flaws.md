@@ -44,5 +44,9 @@ https://docs.djangoproject.com/en/4.2/topics/http/sessions/
     o	utilizing Django ORM  
     o	sanitize data and parametrize SQL-queries
   
-**Broken Authentication**
--	force browsing, unauthenticated access to cached pages
+**Broken Authentication/Force Browsing**
+-	Force browsing to authenticated pages as an unauthenticated user or to privileged pages as a standard user
+-	Bypassing access control checks by modifying the URL
+-	How to fix:
+
+**Cross-site Scripting Attack (not backend)**

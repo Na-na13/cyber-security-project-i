@@ -1,8 +1,6 @@
 import sqlite3
-from django.http import HttpResponse
-from django.template import loader
 from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from .models import Message
@@ -47,8 +45,13 @@ def logged(request):
     #    print(e)
     #    return render(request, 'pages/error.html')
 
+
+def admin_check(user):
+    return user.is_staff
+
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @login_required
+@user_passes_test(admin_check)
 def admin(request, messages = None):
     # Flaw: no automatic logout after specified idle time
     # Fix: Session cookie age in settings.py
@@ -64,6 +67,7 @@ def admin(request, messages = None):
     return render(request, 'pages/admin.html', {"user": current_user, "users": users,"messages": messages})
 
 @login_required
+@user_passes_test(admin_check)
 def view_messages(request):
     if request.method == "POST":
         sender = request.POST.get('sender')
@@ -74,6 +78,7 @@ def view_messages(request):
         return admin(request, messages)
 
 @login_required
+@user_passes_test(admin_check)
 def delete_messages(request):
     if request.method == "POST":
         selected_message_ids = request.POST.getlist('message_id')  # Get the list of selected message IDs

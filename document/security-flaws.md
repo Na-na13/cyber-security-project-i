@@ -1,7 +1,11 @@
 # Cyber Security Project I (OWASP list 2017)
 
 ## Installation
-The project application utilises Python’s Django framework. Because this project is part of the course Cyber Security, it is assumed that user has Python and Django installed. In addition, user must install Django Axes to ensure the correct functionality of the project application. Django Axes can be installed with command pip install django-axes[ipware] (see more about Django Axes: https://github.com/jazzband/django-axes). 
+The project application utilises Python’s Django framework. Because this project is part of the course Cyber Security, it is assumed that user has Python and Django installed. In addition, user must install Django Axes to ensure the correct functionality of the project application. Django Axes can be installed with command 
+```
+pip install django-axes[ipware]
+```
+ (see more about Django Axes: https://github.com/jazzband/django-axes). 
 
 ## Security flaws and fixes
 

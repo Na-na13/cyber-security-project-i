@@ -20,30 +20,18 @@ def create(request):
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @login_required
 def logged(request):
-    # Flaw: no automatic logout after specified idle time
+    # Flaw 1: No automatic logout after specified idle time
     # Fix: Session cookie age in settings.py
+
+    # Flaw 2: After logout, user can browse back to cached pages which require login
+    # Fix: Cache control for views which require login
 
     current_user = request.user
     users = ['all'] + list(User.objects.exclude(username=current_user))
     messages = list(Message.objects.filter(
         receiver=current_user)) + list(Message.objects.filter(
         receiver='all'))
-    for message in messages:
-        print(message.id)
     return render(request, 'pages/logged.html', {"user": current_user, "users": users,"messages": messages})
-
-    #try:
-    #    conn = sqlite3.connect('db.sqlite3')
-    #    cursor = conn.cursor()
-    #    sql = "SELECT sender, messagetext FROM messages WHERE receiver=? OR receiver='all'"
-    #    messages = cursor.execute(sql, (current_user.username,)).fetchall()
-    #    conn.commit()
-    #    conn.close()
-    #    return render(request, 'pages/logged.html', {"user": current_user, "users": users,"messages": messages})
-    
-    #except Exception as e:
-    #    print(e)
-    #    return render(request, 'pages/error.html')
 
 
 def admin_check(user):
@@ -53,17 +41,14 @@ def admin_check(user):
 @login_required
 @user_passes_test(admin_check)
 def admin(request, messages = None):
-    # Flaw: no automatic logout after specified idle time
-    # Fix: Session cookie age in settings.py
+    # Flaw: Possibility for force browsing to admin pages/elevation of priviledges for logged in user
+    # Fix: In admin pages, check if user actually has admin priviledges with @user_passes_test -decorator.
+    # If user doesn't pass the check, user will be redirected to login page
 
     current_user = request.user
     users = ['all'] + list(User.objects.exclude(username=current_user))
-    if not messages:
-        messages = list(Message.objects.filter(
-            receiver=current_user)) + list(Message.objects.filter(
-            receiver='all'))
-    #for message in messages:
-    #    print(message.messagetext)
+    if messages is None:
+        messages = list(Message.objects.all())
     return render(request, 'pages/admin.html', {"user": current_user, "users": users,"messages": messages})
 
 @login_required
@@ -81,15 +66,10 @@ def view_messages(request):
 @user_passes_test(admin_check)
 def delete_messages(request):
     if request.method == "POST":
-        selected_message_ids = request.POST.getlist('message_id')  # Get the list of selected message IDs
-
-        # Process the selected message IDs as needed
+        selected_message_ids = request.POST.getlist('message_id')
         for message_id in selected_message_ids:
             Message.objects.filter(id=message_id).delete()
-            # Delete the messages with the given IDs or perform other actions
-            # Example: Message.objects.filter(id=message_id).delete()
 
-        # Redirect or render a response as appropriate
         return redirect('admin')
 
 
@@ -121,7 +101,6 @@ def login_func(request):
 
     username = request.POST.get('username').strip()
     password = request.POST.get('password').strip()
-
     user = authenticate(request=request, username=username, password=password)
 
     if user:
@@ -145,14 +124,16 @@ def send_message(request):
     # CSRF-attack possibility if using GET instead of POST + csrf-token
 
     # Using unsanitized data,
-    # sending message "hello'); DROP TABLE messages;--" (what about "hello'); UPDATE auth_user SET is_staff=True WHERE username='nana1';--") <-- works!
-    # causes application to fall
+    # sending message "hello'); UPDATE auth_user SET is_staff=True WHERE username='nana1';--"
+    # will change user 'nana1' priviledges to admin level and 
+    # sending message "hello'); DROP TABLE messages;--" 
+    # causes application to fall.
 
     # if session['user'] == sender:
     try:
-        messagetext = request.GET.get('messagetext')
-        receiver = request.GET.get('receiver')
         sender = request.user.username
+        receiver = request.GET.get('receiver')
+        messagetext = request.GET.get('messagetext')
         conn = sqlite3.connect('db.sqlite3')
         cursor = conn.cursor()
         sql = "INSERT INTO messages (sender, receiver, messagetext) VALUES ('" + sender + "','" + receiver + "','" + messagetext + "')"

@@ -32,7 +32,11 @@
         {% csrf_token %}
         <select name="sender">
           {% for user in users %}
-            <option value="{{user.username}}">{{user}}</option>
+            {% if user is users.0 %}
+              <option value="{{user}}">{{user}}</option>
+            {% else %}
+              <option value="{{user.username}}">{{user}}</option>
+            {% endif %}
           {% endfor %}    
         </select><br>
         <button type="submit">Select</button>

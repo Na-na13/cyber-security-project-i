@@ -10,8 +10,9 @@ pip install django-axes[ipware]
 ## Security flaws and fixes
 
 ### Flaw 1: A1 Injection
-The project application’s function for sending messages is vulnerable to SQL-injection. The vulnerable version of the function utilises raw SQL and unsanitised data. The user provided data, namely the sent message, is directly concatenated to the query without parametrisation. The attacker can e.g. give admin privileges to themselves or drop data tables, which leads the application to fail. Utilising Django’s default object-relational mapping layer (ORM) is more secure choice than raw SQL. Django ORM is based on querysets that are protected against SQL-injection by query parameterisation.
-In some cases, raw SQL provides more powerful queries than Django ORM. If utilising raw SQL is justifiable, it is important to sanitise the user provided data and parametrise the queries. Also, it might be relevant to prevent prevent multiple query execution at once (the vulnerable version of send message function utilises executionscript() instead of execute()). 
+The project application’s function for sending messages is vulnerable to SQL-injection. The vulnerable version of the function utilises raw SQL and unsanitised data. The user provided data, namely the sent message, is directly concatenated to the query without parametrisation. The attacker can e.g. give admin privileges to themselves or drop data tables, which leads the application to fail. Utilising Django’s default object-relational mapping layer (ORM) is more secure choice than raw SQL. Django ORM is based on querysets that are protected against SQL-injection by query parameterisation.  
+
+In some cases, raw SQL provides more powerful queries than Django ORM. If utilising raw SQL is justifiable, it is important to sanitise the user provided data and parametrise the queries. Also, it might be relevant to prevent multiple query execution at once (the vulnerable version of send message function utilises executionscript() instead of execute()). 
 
 ### Flaw 2: A2 Broken Authentication
 Broken authentication often arises due to improperly implemented authentication and session management functions. Authentication refers to the process of verifying the identity of users, typically through usernames and passwords, while session management involves maintaining and controlling the user's session after authentication.  
@@ -32,12 +33,16 @@ The project application logs the user automatically out after 3 minutes idle tim
 (Source: https://docs.djangoproject.com/en/4.2/topics/http/sessions/)
 
 ### Flaw 3: A5 Broken Access Control
--	Force browsing to authenticated pages as an unauthenticated user or to privileged pages as a standard user
--	Bypassing access control checks by modifying the URL
--	How to fix:
+Access control ensures that users are confined within their designated permissions, preventing unauthorized actions. Broken access control allows attackers to bypass or circumvent the normal security controls checks. Poorly implemented access control permits force browsing to authenticated pages as an unauthenticated user or to privileged pages as a standard user. Furthermore, by manipulating the URL directly, attackers may bypass application’s access controls.  
+
+Django provides several different kinds of access control mechanisms in form of decorators. Within the project application, pages restricted to logged in users, utilises login required -decorator to prevent unauthorised access. Privileged pages, namely the admin pages, are protected with custom admin check -decorator, which checks whether the user has the admin status or not. In case of not having the admin status, the user is redirected to login page. Without these decorators, attackers can bypass application login completely and a normal logged in user can get access to admin pages solely by modifying the URL in correct way.  
+(Source: https://docs.djangoproject.com/en/4.2/topics/auth/default/#the-login-required-decorator, https://docs.djangoproject.com/en/4.2/topics/auth/default/#limiting-access-to-logged-in-users-that-pass-a-test)  
+
+In the project application, broken access control allows user to browse back to previous page, which requires login, even after successful logged out. This vulnerability is patched by controlling the caching of the pages. This solution might not be the best practice and the URLs of previous pages are still visible to the user even though the view of the corresponding page is not.
+
 ### Flaw 4:  A7 Cross-site script (not backend!)
 -	
-### Flaw 5: Cross-Site Request Forgery (CSRF) (not on the OWASP list)
+### Flaw 5: Cross-Site Request Forgery (CSRF) (not on the OWASP 2017 list)
 -	User can be tricked to visit malicious webpage which contains broken image. When browser loads the page, spam-message is sent to every user of the application
 -	How to fix:
     -	csrf-token

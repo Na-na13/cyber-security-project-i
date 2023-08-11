@@ -14,37 +14,23 @@ The project application’s function for sending messages is vulnerable to SQL-i
 In some cases, raw SQL provides more powerful queries than Django ORM. If utilising raw SQL is justifiable, it is important to sanitise the user provided data and parametrise the queries. Also, it might be relevant to prevent prevent multiple query execution at once (the vulnerable version of send message function utilises executionscript() instead of execute()). 
 
 ### Flaw 2: A2 Broken Authentication
-#### Credential Stuffing
-https://github.com/jazzband/django-axes
--	No limits on how many times user can attempt to login. Attacker may use the application for e.g. testing username-password -pairs or dictionary attack
--	How to fix:    
-    -	Django axes  
-        - if user has 3 unsuccessful login attempts, the account is locked for defined period of time (3 minutes at the moment for test reasons)
-        -	compares username + IP-address combination to prevent denial of service attacks (if done only based on username, increases possibility of DoS attack) 
-        -	logs all login failures to database automatically
-#### Password Validation
-https://docs.djangoproject.com/en/4.2/topics/auth/passwords/#module-django.contrib.auth.password_validation 
--	No rules for credentials e.g. password can be anything
--	How to fix:
-    -	Django offers pluggable configurable password validators
-    -	defaults:
-        -	UserAttributeSimilarityValidator
-            o	checks the similarity between the password and a set of attributes of the user (default ‘username’, ‘first_name’, ‘last_name’, ‘email’)
-            o	max similarity 0.7, scale from 0.1 to 1.0
-        -	MinimumLenghtValidator
-            o	default 8
-        -	CommonPasswordValidator
-            o	compares password to list of 20,000 common passwords
-            o	default list https://gist.github.com/roycewilliams/226886fd01572964e1431ac8afc999ce 
-        -	NumericPasswordValidator
-            o	checks whether the password isn’t entirely numeric
-  -	Support for custom validators
-#### Idle user log out
-https://docs.djangoproject.com/en/4.2/topics/http/sessions/ 
--	After using the application, instead of logging oneself out, user simply closes the browser. If application session timeouts aren’t set correctly, user remains authenticated.
--	How to fix:
-      -	automated log out after predefined idle time using session cookies (3 minutes at the moment for test reasons)
-          -	checks the timestamp of the last sent http-request with session cookie, if exceeds the cookie age, shows error page and user must log in again
+Broken authentication often arises due to improperly implemented authentication and session management functions. Authentication refers to the process of verifying the identity of users, typically through usernames and passwords, while session management involves maintaining and controlling the user's session after authentication.  
+
+Credential stuffing, brute force or other automated attacks pose security threats for applications lacking limits for failed login attempts. In these attack methods, the attackers use lists of compromised user credentials to breach into a system. These methods are based on the assumption, that many users reuse usernames and passwords across multiple services.  
+
+Allowing the use of default, weak, or well-known passwords grants attackers an easy access to user accounts.  While it is widely acknowledged that relying on weak passwords and using the same password for multiple accounts is inadvisable, these practices continue to be a common security oversight. Implementing restrictions against the use of default, weak, or well-known passwords within the application reduces the risk of unauthorised access to accounts.  
+
+Session management constitutes the fundamental cornerstone of robust authentication and access controls. A session is created when user logs in successfully and session specific ID is given to the user. Proper session management requires e.g. that session ID is invalidated after logout, idle, and absolute timeouts to prevent any unauthorised access. Inadequately configured session timeouts, combined with users failing to log out, can lead to prolonged authentication. Especially when using public computers, this exposes potential security vulnerabilities.  
+
+In the project application, credential stuffing attacks are prevented with help of Django Axes, a plugin for keeping track of suspicious login attempts. With Axes, the number of unsuccessful login attempts is limited to 3, after which the associated account is locked for 3 minutes (these are for test reasons, both are configurable). Axes compares username + IP-address combination to prevent denial of service (DoS) attacks. Comparing only username increases possibility of DoS attack when attackers can try to get access on multiple accounts from same IP-address and get them locked. After every successful login attempt, the login attempt calculator is reset to zero. Axes also logs all login failures to the database automatically.  
+(Source: https://github.com/jazzband/django-axes)  
+
+Weak password check is implemented in the project application with Django’s pluggable configurable password validators. The project application utilises a default set of validators: UserAttributeSimilarityValidator, MinimumLenghtValidator, CommonPasswordValidator and NumericPasswordValidator (the functionality of each validators are shortly explained  within the code). While these default validators constitute the foundational defence against weak passwords, they do not ensure the creation of truly strong passwords.  
+(Source: https://docs.djangoproject.com/en/4.2/topics/auth/passwords/#module-django.contrib.auth.password_validation)  
+
+The project application logs the user automatically out after 3 minutes idle time (this is for test reasons, configurable). Idle time check is done by comparing the timestamp of the last sent HTTP-request with session cookie age. If the timestamp exceeds the cookie age, user is logged out and redirected to the error page. This prevents unauthorised access to user account in cases where users forget to manually log out.  
+(Source: https://docs.djangoproject.com/en/4.2/topics/http/sessions/)
+
 ### Flaw 3: A5 Broken Access Control
 -	Force browsing to authenticated pages as an unauthenticated user or to privileged pages as a standard user
 -	Bypassing access control checks by modifying the URL

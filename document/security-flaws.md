@@ -40,8 +40,14 @@ Django provides several different kinds of access control mechanisms in form of 
 
 In the project application, broken access control allows user to browse back to previous page, which requires login, even after successful logged out. This vulnerability is patched by controlling the caching of the pages. This solution might not be the best practice and the URLs of previous pages are still visible to the user even though the view of the corresponding page is not.
 
-### Flaw 4:  A7 Cross-site script (not backend!)
--	
+### Flaw 4:  A7 Cross-site script
+Cross-Site Scripting (XSS) attacks are a type of injection, in which malicious scripts are injected into otherwise benign and trusted websites. XSS attacks occur when an attacker uses a web application to send malicious code, generally in the form of a browser side script, to a different end user. There are three main types of XSS attacks: reflected XSS, where the malicious script comes from the current HTTP request, stored XSS, where the malicious script comes from the website's database, and DOM-based XSS, where the vulnerability exists in client-side code rather than server-side code.  
+
+The project application has vulnerability for XSS attack in the function for sending a message. The user provided data is not sanitised properly before inserting the data to the database. Furthermore, front end uses the Django safe filter, which renders HTML as-is without being escaped. This allows the attacker to send message to every user containing malicious scripts.  
+
+Escaping HTML characters is a default setting in Django. However, if this feature is turned off, e.g. with safe filter, the data sanitation can be accomplished other ways. In the project application, the data is sanitised utilising Python built-in html module which converts characters &, < and > to HTML-safe sequences. This data sanitation approach renders the messages exactly as users entered them thus preventing the injection of any malicious scripts.  
+(Source: https://docs.python.org/3/library/html.html)
+
 ### Flaw 5: Cross-Site Request Forgery (CSRF) (not on the OWASP 2017 list)
 -	User can be tricked to visit malicious webpage which contains broken image. When browser loads the page, spam-message is sent to every user of the application
 -	How to fix:

@@ -5,14 +5,17 @@ The project application utilises Python’s Django framework. Because this proje
 ```
 pip install django-axes[ipware]
 ```
- (see more about Django Axes: https://github.com/jazzband/django-axes). 
+(see more about Django Axes: https://github.com/jazzband/django-axes). 
 
 ## Security flaws and fixes
 
 ### Flaw 1: A1 Injection
-The project application’s function for sending messages is vulnerable to SQL-injection. The vulnerable version of the function utilises raw SQL and unsanitised data. The user provided data, namely the sent message, is directly concatenated to the query without parametrisation. The attacker can e.g. give admin privileges to themselves or drop data tables, which leads the application to fail. Utilising Django’s default object-relational mapping layer (ORM) is more secure choice than raw SQL. Django ORM is based on querysets that are protected against SQL-injection by query parameterisation.  
+A common example of injection vulnerability is the SQL injection, where malicious SQL code is utilised to manipulate the backend database. This manipulation enables unauthorised access to data that was not intended for viewing or alteration. Attackers aiming to execute SQL injection tampers a reqular SQL query to exploit inadequately sanitized input vulnerabilities within the database.  
 
-In some cases, raw SQL provides more powerful queries than Django ORM. If utilising raw SQL is justifiable, it is important to sanitise the user provided data and parametrise the queries. Also, it might be relevant to prevent multiple query execution at once (the vulnerable version of send message function utilises executionscript() instead of execute()). 
+The project application’s function [send_message()](https://github.com/Na-na13/cyber-security-project-i/blob/8de972f38bd5bae1b2af121e4b86bcc16669f3fa/project/src/views.py#L122) is vulnerable to SQL-injection. The vulnerable version of the function utilises raw SQL and unsanitised data. The user provided data, namely the sent message, is directly concatenated to the query without parametrisation. The attacker can e.g. give admin privileges to themselves or drop data tables, which leads the application to fail. Utilising Django’s default object-relational mapping layer (ORM) is more secure choice than raw SQL. Django ORM is based on querysets that are protected against SQL-injection by query parameterisation.  
+
+In some cases, raw SQL provides more powerful queries than Django ORM. If utilising raw SQL is justifiable, it is important to sanitise the user provided data and parametrise the queries. Also, it might be relevant to prevent multiple query execution at once (the vulnerable version of send_message() function utilises [executescript()](https://github.com/Na-na13/cyber-security-project-i/blob/8de972f38bd5bae1b2af121e4b86bcc16669f3fa/project/src/views.py#L140), which allows to execute multiple queries at once, instead of execute(), which allows only one query execution at a time).  
+(Source: https://docs.djangoproject.com/en/4.2/topics/db/sql/#executing-custom-sql-directly)
 
 ### Flaw 2: A2 Broken Authentication
 Broken authentication often arises due to improperly implemented authentication and session management functions. Authentication refers to the process of verifying the identity of users, typically through usernames and passwords, while session management involves maintaining and controlling the user's session after authentication.  

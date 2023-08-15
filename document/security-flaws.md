@@ -49,7 +49,10 @@ Escaping HTML characters is a default setting in Django. However, if this featur
 (Source: https://docs.python.org/3/library/html.html)
 
 ### Flaw 5: Cross-Site Request Forgery (CSRF) (not on the OWASP 2017 list)
--	User can be tricked to visit malicious webpage which contains broken image. When browser loads the page, spam-message is sent to every user of the application
--	How to fix:
-    -	csrf-token
-    - use method ‘POST’ instead of ‘GET’ 
+Cross-site request forgery (CSRF) attack is maliciously used to send requests from an authenticated user to a web application. This type of attack occurs when a malicious website contains a link, a form button or some JavaScript that is intended to perform some action on your website, using the credentials of a logged-in user who visits the malicious site in their browser. The victim can’t see the responses to the forged requests, which makes this an especially tricky method of attack and one that works behind the scenes to cause disruptions. CSRF attacks focus on state changes, not the initial theft of data. Even though CSRF is no longer present on the OWASP 2017 Top 10 list, it still poses a potential security risk which should not be ignored.  
+
+In Django, the CSRF middleware and template tag provides easy-to-use protection against CSRF attacks. The CSRF middleware is activated by default. This middleware sends a CSRF cookie with the response. The template tag ‘csrf_token’ should be used in any template that uses a POST form if the form is for internal URL. For external URL’s this is not recommended due to the possible leak of the CSRF token.  
+
+In the project application, the send message function is vulnerable to CSRF attacks, because in the corresponding template, the form that uses POST, does not use the CSRF token. By adding the hidden CSRF token field to the form, the CSRF attacks can be avoided.  
+(Source: https://docs.djangoproject.com/en/4.2/ref/csrf/)
+

@@ -3,16 +3,15 @@
 <html>
     <head>
       <link rel="stylesheet" href="{% static 'project/styles.css' %}">
-      <title>Hi</title>
+      <title>Chatter | Home</title>
     </head>
 
     <body>
-      <h2>Hello {{ user | safe }}</h2>
+      <h2>Hello {{ user }}</h2>
       <a href="{% url 'logout' %}">Log out</a>
       <h3>Send a message to the board</h3>
-      <form action="{% url 'send_message' %}" method="GET">
-      <!--<form action="{% url 'send_message' %}" method="POST">
-        {% csrf_token %}-->
+      <form action="{% url 'send_message' %}" method="POST">
+        <!--{% csrf_token %}-->
         <select name="receiver">
           {% for user in users %}
             {% if user is users.0 %}
@@ -36,8 +35,6 @@
           <tr>
             <td>{{message.sender}}</td>
             <td>{{message.messagetext | safe}}</td>
-            <!--<td>{{message.0}}</td>
-            <td>{{message.1 | safe}}</td>-->
           </tr>
         {% endfor %}
       </table>

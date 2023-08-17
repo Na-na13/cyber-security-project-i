@@ -98,15 +98,22 @@ DATABASES = {
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        # checks the similarity between the password and a set of attributes of the user
+        # (default ‘username’, ‘first_name’, ‘last_name’, ‘email’)
     },
     {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        # default 8
     },
     {
         'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        # compares password to list of 20,000 common passwords
+        # default list https://gist.github.com/roycewilliams/226886fd01572964e1431ac8afc999ce
+
     },
     {
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        # checks whether the password is not entirely numeric
     },
 ]
 
@@ -136,7 +143,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
 
-SESSION_COOKIE_AGE = 180 # 3 minutes. "1209600(2 weeks)" by default 
+SESSION_COOKIE_AGE = 180 # = 3 minutes, 1209600 (2 weeks) by default
 
 SESSION_SAVE_EVERY_REQUEST = True # "False" by default
 

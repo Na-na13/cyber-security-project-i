@@ -21,11 +21,11 @@ def create(request):
 # @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 # @login_required
 def logged(request):
-    # Flaw 1: No automatic logout after specified idle time
-    # Fix: Session cookie age in settings.py
+    # Flaw 1: No automatic logout after specified idle time.
+    # Fix: Session cookie age in 'settings.py'.
 
-    # Flaw 2: After logout, user can browse back to cached pages which require login
-    # Fix: Cache control for views which require login
+    # Flaw 2: After logout, user can browse back to cached pages which require login.
+    # Fix: Cache control for views which require login.
 
     current_user = request.user
     users = ['all'] + list(User.objects.exclude(username=current_user))
@@ -42,9 +42,9 @@ def admin_check(user):
 # @login_required
 # @user_passes_test(admin_check)
 def admin(request, messages = None):
-    # Flaw: Possibility for force browsing to admin pages/elevation of priviledges for logged in user
+    # Flaw: Possibility for force browsing to admin pages/elevation of priviledges for logged in user.
     # Fix: In admin pages, check if user actually has admin priviledges with @user_passes_test -decorator.
-    # If user doesn't pass the check, user will be redirected to login page
+    # If user doesn't pass the check, user will be redirected to login page.
 
     current_user = request.user
     users = ['all'] + list(User.objects.exclude(username=current_user))
@@ -75,6 +75,8 @@ def delete_messages(request):
 
 
 def create_account(request):
+    # Flaw: No restrictions for password => password can be practically anything.
+    # Fix: Django pluggable passwordvalidators (see definitions at 'settings.py').
     username = request.POST.get('username').strip()
     if len(User.objects.filter(username=username)) > 0:
         return render(request, 'pages/create.html', {"error_message": f"Username '{username}' is taken."}) 
@@ -96,9 +98,9 @@ def create_account(request):
 
 # @axes_dispatch
 def login_func(request):
-    # Flaw: No counter for invalid login attempts => credential stuffing
+    # Flaw: No counter for invalid login attempts => credential stuffing.
     # Fix: Django Axes with username + IP-address combination,
-    # otherwise possibility for DoS-attack
+    # otherwise possibility for DoS-attack.
 
     username = request.POST.get('username').strip()
     password = request.POST.get('password').strip()
@@ -134,8 +136,8 @@ def send_message(request):
 
     ##########################################
     try:
-        receiver = request.POST.get('receiver')
-        messagetext = request.POST.get('messagetext')
+        receiver = request.GET.get('receiver')
+        messagetext = request.GET.get('messagetext')
         conn = sqlite3.connect('db.sqlite3')
         cursor = conn.cursor()
         sql = "INSERT INTO messages (sender, receiver, messagetext) VALUES ('" + sender + "','" + receiver + "','" + messagetext + "')"
@@ -153,8 +155,11 @@ def send_message(request):
     ##########################################
 
 
-    # Fix 1: Use of Django ORM instead of raw SQL and sanitizing the user input data
-    # (To test the fix, replace try-except-block above with out commented if-block below)
+    # Fix: Use of POST + CSRF-token instead of GET, Django ORM instead of raw SQL
+    # and sanitizing the user input data. To test the fix, replace try-except-block
+    # above with commented out if-block below and from templates 'logged.html' and
+    # 'admin.html', replace the tag that starts the message sending form containing GET
+    #  as a method with commented out tag with POST as a method and a hidden CSRF-token.
 
     #if request.method == 'POST':
     #   if request.session['user'] == sender:

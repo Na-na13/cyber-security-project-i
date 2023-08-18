@@ -10,8 +10,11 @@ To run the application, navigate to the folder which contains the file **manage.
 ```
 python3 manage.py runserver
 ```
-Open the application in the browser at **http://127.0.0.1:8000/src**. You should see the login page of the application. The database of the application contains a few user accounts which can be used to test the functionalities of the application:
+Open the application in the browser at **http://127.0.0.1:8000/src**. You should see the login page of the application. The database of the application contains a few user accounts which can be used to test the functionalities of the application, or new users can be created.  
+
 | **username** | **password** |
 | ------------ | ------------ |
 | admin | SuperSecurePassword123 |
 | alice | redqueen |
+| bob | squarepants |
+| charlie | peanuts|
